@@ -36,9 +36,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <SiteHeader />
-          <div className="flex flex-1 flex-col pb-12">{children}</div>
-          <SupportFooter />
+          <div className="flex flex-1 flex-col pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-24">
+            {children}
+          </div>
         </ThemeProvider>
+        <SupportFooter />
       </body>
     </html>
   );
