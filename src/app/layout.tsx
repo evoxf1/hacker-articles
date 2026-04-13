@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { SiteHeader } from "@/components/site-header";
+import { SupportFooter } from "@/components/support-footer";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
@@ -17,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hacker Articles",
+  title: "Brutal Articles",
   description: "A fast static feed for brutally honest daily updates.",
 };
 
@@ -35,7 +36,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <SiteHeader />
-          {children}
+          <div className="flex flex-1 flex-col pb-12">{children}</div>
+          <SupportFooter />
         </ThemeProvider>
       </body>
     </html>

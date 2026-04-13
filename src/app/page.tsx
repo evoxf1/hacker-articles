@@ -14,9 +14,6 @@ export default function HomePage() {
         <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
           brutal honesty daily
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Hacker Articles
-        </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
           Independent updates covering what happened today across tech, policy, markets, and the
           internet. Fast static pages, clean reading, and no fluff.

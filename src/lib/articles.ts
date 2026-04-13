@@ -3,8 +3,12 @@ import path from "node:path";
 
 import matter from "gray-matter";
 import readingTime from "reading-time";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
+import remarkRehype from "remark-rehype";
 import { remark } from "remark";
-import html from "remark-html";
+
+import { isSafeArticleSlug, safeCoverImageSrc, safeExternalHref } from "@/lib/security";
 
 const articlesDirectory = path.join(process.cwd(), "content/articles");
 
@@ -34,14 +38,45 @@ type RawFrontmatter = {
   author?: string;
 };
 
-function getFileNames() {
+function listArticleMarkdownFiles(): string[] {
   if (!fs.existsSync(articlesDirectory)) {
     return [];
   }
 
-  return fs
-    .readdirSync(articlesDirectory)
-    .filter((file) => file.endsWith(".md") && file.toLowerCase() !== "readme.md");
+  return fs.readdirSync(articlesDirectory).filter((file) => {
+    if (!file.endsWith(".md") || file.toLowerCase() === "readme.md") {
+      return false;
+    }
+    const slug = file.replace(/\.md$/, "");
+    return isSafeArticleSlug(slug);
+  });
+}
+
+function articleMetaFromFrontmatter(
+  slug: string,
+  frontmatter: RawFrontmatter,
+  content: string,
+): ArticleMeta {
+  return {
+    slug,
+    title: frontmatter.title ?? slug,
+    summary: frontmatter.summary ?? "No summary yet.",
+    date: frontmatter.date ?? new Date().toISOString().slice(0, 10),
+    category: frontmatter.category ?? "General",
+    coverImage: safeCoverImageSrc(frontmatter.coverImage),
+    source: safeExternalHref(frontmatter.source),
+    author: frontmatter.author?.trim() || undefined,
+    readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)),
+  };
+}
+
+async function markdownToSanitizedHtml(markdown: string): Promise<string> {
+  const file = await remark()
+    .use(remarkRehype)
+    .use(rehypeSanitize)
+    .use(rehypeStringify)
+    .process(markdown);
+  return String(file);
 }
 
 function getArticleMetaFromFile(fileName: string): ArticleMeta {
@@ -51,21 +86,11 @@ function getArticleMetaFromFile(fileName: string): ArticleMeta {
   const { data, content } = matter(fileContents);
   const frontmatter = data as RawFrontmatter;
 
-  return {
-    slug,
-    title: frontmatter.title ?? slug,
-    summary: frontmatter.summary ?? "No summary yet.",
-    date: frontmatter.date ?? new Date().toISOString().slice(0, 10),
-    category: frontmatter.category ?? "General",
-    coverImage: frontmatter.coverImage,
-    source: frontmatter.source,
-    author: frontmatter.author,
-    readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)),
-  };
+  return articleMetaFromFrontmatter(slug, frontmatter, content);
 }
 
 export function getAllArticles(): ArticleMeta[] {
-  const allArticles = getFileNames().map(getArticleMetaFromFile);
+  const allArticles = listArticleMarkdownFiles().map(getArticleMetaFromFile);
 
   return allArticles.sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -73,10 +98,14 @@ export function getAllArticles(): ArticleMeta[] {
 }
 
 export function getAllArticleSlugs(): string[] {
-  return getFileNames().map((file) => file.replace(/\.md$/, ""));
+  return listArticleMarkdownFiles().map((file) => file.replace(/\.md$/, ""));
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  if (!isSafeArticleSlug(slug)) {
+    return null;
+  }
+
   const fullPath = path.join(articlesDirectory, `${slug}.md`);
 
   if (!fs.existsSync(fullPath)) {
@@ -86,19 +115,10 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
   const frontmatter = data as RawFrontmatter;
-  const processedContent = await remark().use(html).process(content);
-  const contentHtml = processedContent.toString();
+  const contentHtml = await markdownToSanitizedHtml(content);
 
   return {
-    slug,
-    title: frontmatter.title ?? slug,
-    summary: frontmatter.summary ?? "No summary yet.",
-    date: frontmatter.date ?? new Date().toISOString().slice(0, 10),
-    category: frontmatter.category ?? "General",
-    coverImage: frontmatter.coverImage,
-    source: frontmatter.source,
-    author: frontmatter.author,
-    readingMinutes: Math.max(1, Math.ceil(readingTime(content).minutes)),
+    ...articleMetaFromFrontmatter(slug, frontmatter, content),
     contentHtml,
   };
 }

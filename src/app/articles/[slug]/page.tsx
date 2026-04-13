@@ -75,7 +75,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {article.source ? (
         <p className="mt-10 text-sm text-muted-foreground">
           Source:{" "}
-          <a className="underline underline-offset-4" href={article.source} target="_blank" rel="noreferrer">
+          <a
+            className="underline underline-offset-4"
+            href={article.source}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {article.source}
           </a>
         </p>
