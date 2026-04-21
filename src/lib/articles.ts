@@ -4,6 +4,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
 import rehypeSanitize from "rehype-sanitize";
+import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import remarkRehype from "remark-rehype";
 import { remark } from "remark";
@@ -24,8 +25,15 @@ export type ArticleMeta = {
   readingMinutes: number;
 };
 
+export type TocHeading = {
+  id: string;
+  text: string;
+  level: number;
+};
+
 export type Article = ArticleMeta & {
   contentHtml: string;
+  toc: TocHeading[];
 };
 
 type RawFrontmatter = {
@@ -70,9 +78,29 @@ function articleMetaFromFrontmatter(
   };
 }
 
+function stripHtmlTags(html: string): string {
+  return html.replace(/<[^>]+>/g, "").trim();
+}
+
+function extractTocFromHtml(html: string): TocHeading[] {
+  const items: TocHeading[] = [];
+  const re = /<h([2-6])[^>]*\bid="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(html)) !== null) {
+    const level = Number(match[1]);
+    const id = match[2];
+    const text = stripHtmlTags(match[3]);
+    if (id && text) {
+      items.push({ id, text, level });
+    }
+  }
+  return items;
+}
+
 async function markdownToSanitizedHtml(markdown: string): Promise<string> {
   const file = await remark()
     .use(remarkRehype)
+    .use(rehypeSlug)
     .use(rehypeSanitize)
     .use(rehypeStringify)
     .process(markdown);
@@ -116,10 +144,12 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const { data, content } = matter(fileContents);
   const frontmatter = data as RawFrontmatter;
   const contentHtml = await markdownToSanitizedHtml(content);
+  const toc = extractTocFromHtml(contentHtml);
 
   return {
     ...articleMetaFromFrontmatter(slug, frontmatter, content),
     contentHtml,
+    toc,
   };
 }
 
