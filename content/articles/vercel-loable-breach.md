@@ -75,9 +75,9 @@ Look at recent stuff:
 
 It is the same root issue:
 
-👉 access is easy  
-👉 control is weak  
-👉 visibility is poor  
+- access is easy  
+- control is weak  
+- visibility is poor  
 
 AI is just increasing the blast radius.
 

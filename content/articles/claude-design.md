@@ -36,10 +36,10 @@ But it does not replace:
 It compresses the early phase of creation, not the final one.
 
 The value is in:
-👉 going from “idea” → “something visible” in seconds  
+- going from “idea” → “something visible” in seconds  
 
 The risk is:
-👉 people confusing output with quality  
+- people confusing output with quality  
 
 ## What actually matters now
 
