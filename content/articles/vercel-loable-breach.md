@@ -1,7 +1,7 @@
 ---
 title: "Vercel breach, Lovable mess: same story, different week"
 summary: "A Vercel-linked breach via Context.ai and a separate Lovable vulnerability show the same pattern: weak human links, exposed tokens, and teams realizing too late that ‘not a breach’ does not mean ‘no risk’."
-date: "2026-04-21"
+date: "2026-04-20"
 category: "Security"
 author: "Sahil"
 source: "https://hackread.com/vercel-breach-context-ai-shinyhunters-not-involved/"
