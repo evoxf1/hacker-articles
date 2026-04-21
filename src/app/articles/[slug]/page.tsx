@@ -39,20 +39,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   return (
-    <div className="relative mx-auto flex w-full max-w-6xl justify-center gap-0 overflow-visible px-4 py-10 sm:px-6 xl:gap-10 xl:px-8">
-      <aside className="hidden shrink-0 xl:sticky xl:top-28 xl:block xl:w-14 xl:self-start xl:overflow-visible">
-        <ArticleTocRail items={article.toc} />
-      </aside>
+    <div className="relative mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:max-w-[50rem] lg:px-10">
+      <ArticleTocRail items={article.toc} />
 
-      <main className="min-w-0 w-full max-w-3xl flex-1">
+      <main className="min-w-0 w-full">
       <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
         ← Back to feed
       </Link>
 
       <header className="mt-6">
         <Badge variant="secondary">{article.category}</Badge>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{article.title}</h1>
-        <p className="mt-3 text-lg text-muted-foreground">{article.summary}</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{article.title}</h1>
+        <p className="mt-3 text-lg text-muted-foreground lg:text-xl lg:leading-relaxed">{article.summary}</p>
         <p className="mt-4 text-sm text-muted-foreground">
           {formatPublishDate(article.date)} · {article.readingMinutes} min read
           {article.author ? ` · ${article.author}` : ""}
@@ -74,7 +72,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <Separator className="my-8" />
 
       <article
-        className="max-w-none space-y-4 text-base leading-7 text-foreground/90 [&_a]:underline [&_a]:underline-offset-4 [&_h1]:mt-8 [&_h1]:scroll-mt-28 [&_h1]:text-3xl [&_h1]:font-semibold [&_h2]:mt-8 [&_h2]:scroll-mt-28 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mt-6 [&_h3]:scroll-mt-28 [&_h3]:text-xl [&_h3]:font-semibold [&_li]:ml-6 [&_li]:list-disc [&_p]:mt-4"
+        className="max-w-none space-y-4 text-base leading-7 text-foreground/90 lg:space-y-5 lg:text-lg lg:leading-8 lg:text-foreground [&_a]:underline [&_a]:underline-offset-4 [&_h1]:mt-8 [&_h1]:scroll-mt-28 [&_h1]:text-3xl [&_h1]:font-semibold lg:[&_h1]:text-4xl [&_h2]:mt-8 [&_h2]:scroll-mt-28 [&_h2]:text-2xl [&_h2]:font-semibold lg:[&_h2]:text-3xl [&_h3]:mt-6 [&_h3]:scroll-mt-28 [&_h3]:text-xl [&_h3]:font-semibold lg:[&_h3]:text-2xl [&_li]:ml-6 [&_li]:list-disc [&_p]:mt-4"
         dangerouslySetInnerHTML={{ __html: article.contentHtml }}
       />
 

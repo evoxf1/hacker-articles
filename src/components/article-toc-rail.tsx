@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSyncExternalStore } from "react";
 
 import type { TocHeading } from "@/lib/articles";
 
@@ -8,7 +10,16 @@ type ArticleTocRailProps = {
   items: TocHeading[];
 };
 
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function ArticleTocRail({ items }: ArticleTocRailProps) {
+  const isClient = useIsClient();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,10 +58,13 @@ export function ArticleTocRail({ items }: ArticleTocRailProps) {
     return null;
   }
 
-  return (
-    <nav aria-label="On this page" className="relative w-10 select-none overflow-visible xl:w-12">
+  const rail = (
+    <nav
+      aria-label="On this page"
+      className="pointer-events-auto fixed left-[max(1rem,env(safe-area-inset-left))] top-28 z-40 hidden w-auto min-w-11 touch-pan-y overflow-visible xl:block"
+    >
       <h2 className="sr-only">On this page</h2>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-1">
         {items.map((item) => {
           const isActive = activeId === item.id;
           const indent = item.level > 2 ? (item.level - 2) * 8 : 0;
@@ -60,18 +74,20 @@ export function ArticleTocRail({ items }: ArticleTocRailProps) {
               <a
                 href={`#${item.id}`}
                 title={item.text}
-                className="group relative flex items-center py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="group relative flex min-h-11 min-w-11 items-center justify-start rounded-md py-2 pl-2 pr-3 outline-none [-webkit-tap-highlight-color:transparent] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <span
                   className={[
                     "h-px shrink-0 rounded-full transition-[width,background-color]",
-                    isActive ? "w-10 bg-foreground/80" : "w-6 bg-muted-foreground/35 group-hover:w-8 group-hover:bg-muted-foreground/60",
+                    isActive
+                      ? "w-10 bg-foreground/80"
+                      : "w-6 bg-muted-foreground/35 group-hover:w-8 group-hover:bg-muted-foreground/60",
                   ].join(" ")}
                   aria-hidden
                 />
                 <span
                   className={[
-                    "pointer-events-none absolute left-full top-1/2 z-10 ml-3 max-w-[min(16rem,calc(100vw-24rem))] -translate-y-1/2 truncate rounded-md border border-border/60 bg-background/95 px-2.5 py-1 text-xs leading-snug text-foreground shadow-sm backdrop-blur-sm",
+                    "pointer-events-none absolute left-full top-1/2 z-10 ml-3 max-w-[min(20rem,calc(100vw-28rem))] -translate-y-1/2 truncate rounded-md border border-border/60 bg-background/95 px-3 py-1 text-sm leading-none text-foreground shadow-sm backdrop-blur-sm",
                     "opacity-0 transition-opacity duration-150",
                     "group-hover:opacity-100 group-focus-visible:opacity-100",
                   ].join(" ")}
@@ -85,4 +101,10 @@ export function ArticleTocRail({ items }: ArticleTocRailProps) {
       </ul>
     </nav>
   );
+
+  if (!isClient) {
+    return null;
+  }
+
+  return createPortal(rail, document.body);
 }
